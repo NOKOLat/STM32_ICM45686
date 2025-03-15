@@ -73,10 +73,12 @@ GPIO_OutputでSPIのデバイス選択を行っています
 | GPIO_Output | CS|
 
 ### SPIx
-![スクリーンショット (523)](https://github.com/user-attachments/assets/18a65c35-e5ac-44ad-bde8-39bff4f3e202)
+![スクリーンショット (523)](https://github.com/user-attachments/assets/dfb9b2da-9f23-441c-ba0c-fa767348adbd)
+
 
 ### GPIO
-![スクリーンショット (524)](https://github.com/user-attachments/assets/9b6fa7a5-01f7-4c71-8bcd-4ae6d936491b)
+![スクリーンショット (524)](https://github.com/user-attachments/assets/e1aaffec-eda2-4d0e-bdeb-c1da288f8b3b)
+
 
 
 ### サンプルコード
