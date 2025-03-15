@@ -6,7 +6,6 @@
  */
 
 #include <ICM45686.h>
-#include <bitset>
 
 /**
  * @brief センサーとの接続を確認
