@@ -28,7 +28,6 @@ uint8_t ICM45686::Connection(){
 
         if(Error >= 100){
 
-        	while(1);
             return 1; // 接続失敗
         }
     }
