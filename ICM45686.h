@@ -83,7 +83,7 @@ class ICM45686{
 	private:
 
 		//Buffer
-		uint8_t RawData[12] = {};;
+		uint8_t RawData[12] = {};
 		uint8_t PreData = 0;
 
 		//Config
