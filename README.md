@@ -33,19 +33,19 @@ ICM45686_HAL_I2C.h / ICM45686_HAL_I2C.cpp
 //使用するI2Cの番号を入力
 ICM45686_HAL_I2C icm(&hi2c1);
 
-//Buffer
-int16_t Gyro_Data[3] = {};
-int16_t Accel_Data[3] = {};
+float GyroData[3] = {};
+float GyroData[3] = {};
 
 int main(void){
 
 	icm.Connection();
-	icm.Accel_Config(icm.Mode::low_noize, icm.Accel_Scale::scale_02g, icm.ODR::rate_6400hz);
-	icm.Gyro_Config(icm.Mode::low_noize, icm.Gyro_Scale::scale_0250dps, icm.ODR::rate_6400hz);
+	icm.AccelConfig(icm.Mode::low_noize, icm.AccelScale::scale_02g, icm.ODR::rate_0400hz);
+	icm.GyroConfig(icm.Mode::low_noize, icm.GyroScale::scale_0250dps, icm.ODR::rate_0400hz);
+	icm.Calibration(1000);
 
   while(1){
 
-  	icm.Get_Data(Accel_Data, Gyro_Data);
+  	icm.GetData(AccelData, GyroData);
   }
 }
 ```
@@ -89,19 +89,19 @@ GPIO_OutputでSPIのデバイス選択を行っています
 //使用するSPIとGPIOのピンを入力
 ICM45686_HAL_SPI icm(&hspi1, GPIOB, GPIO_PIN_6);
 
-//Buffer
-int16_t Gyro_Data[3] = {};
-int16_t Accel_Data[3] = {};
+float GyroData[3] = {};
+float GyroData[3] = {};
 
 int main(void){
 
 	icm.Connection();
-	icm.Accel_Config(icm.Mode::low_noize, icm.Accel_Scale::scale_02g, icm.ODR::rate_6400hz);
-	icm.Gyro_Config(icm.Mode::low_noize, icm.Gyro_Scale::scale_0250dps, icm.ODR::rate_6400hz);
+	icm.AccelConfig(icm.Mode::low_noize, icm.AccelScale::scale_02g, icm.ODR::rate_0400hz);
+	icm.GyroConfig(icm.Mode::low_noize, icm.GyroScale::scale_0250dps, icm.ODR::rate_0400hz);
+	icm.Calibration(1000);
 
   while(1){
 
-  	icm.Get_Data(Accel_Data, Gyro_Data);
+  	icm.GetData(AccelData, GyroData);
   }
 }
 ```
@@ -117,7 +117,7 @@ int main(void){
 
 ![スクリーンショット (493)](https://github.com/user-attachments/assets/1dff5040-14f2-4d4b-9303-17537af35aec)
 
-- ConnectionとConfig関数には戻り値が設定されています
+- 各関数には戻り値が設定されています
 
   特にConnection関数で通信確立を確認する場合はエラーハンドリングを行うようにしてください
 
