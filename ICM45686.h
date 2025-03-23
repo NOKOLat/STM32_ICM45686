@@ -32,7 +32,7 @@ class ICM45686{
 			low_noize
 		};
 
-		enum class Accel_Scale: uint8_t{
+		enum class AccelScale: uint8_t{
 
 			scale_32g = 0x00,
 			scale_16g,
@@ -41,7 +41,7 @@ class ICM45686{
 			scale_02g
 		};
 
-		enum class Gyro_Scale: uint8_t{
+		enum class GyroScale: uint8_t{
 
 			scale_4000dps = 0x00,
 			scale_2000dps,
@@ -74,13 +74,32 @@ class ICM45686{
 		};
 
 		uint8_t Connection();
-		uint8_t Accel_Config(ICM45686::Mode, ICM45686::Accel_Scale, ICM45686::ODR);
-		uint8_t Gyro_Config(ICM45686::Mode, ICM45686::Gyro_Scale, ICM45686::ODR);
-		uint8_t Get_Data(int16_t Accel_Buffer[3], int16_t Gyro_Buffer[3]);
+		uint8_t AccelConfig(ICM45686::Mode, ICM45686::AccelScale, ICM45686::ODR);
+		uint8_t GyroConfig(ICM45686::Mode, ICM45686::GyroScale, ICM45686::ODR);
+		uint8_t GetRawData(int16_t AccelBuffer[3], int16_t GyroBuffer[3]);
+		uint8_t GetData(float AccelBuffer[3], float GyroBuffer[3]);
+		uint8_t Calibration(uint16_t Count);
 
 	private:
 
-		uint8_t Raw_Data[12];
+		//Buffer
+		uint8_t RawData[12] = {};;
+		uint8_t PreData = 0;
+
+		//Config
+		float AccelScaleValue = 0;
+		float GyroScaleValue = 0;
+		uint8_t AccelModeTmp = 0;
+		uint8_t GyroModeTmp = 0;
+
+		//OffSet
+		int32_t AccelOffset[3] = {};
+		int32_t GyroOffset[3] = {};
+
+		//Calc
+		float G = 9.80665;
+
+		//Read,Write
 		virtual void Read(ICM45686::REGISTER, uint8_t* RxBuffer, uint8_t Len){}
 		virtual void Write(ICM45686::REGISTER, uint8_t* TxBuffer, uint8_t Len){}
 };
