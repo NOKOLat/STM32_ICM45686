@@ -50,20 +50,13 @@ uint8_t ICM45686::Connection(){
  */
 uint8_t ICM45686::AccelConfig(ICM45686::Mode Mode, ICM45686::AccelScale Scale, ICM45686::ODR ODR){
 
-	//現在の値を取得
-	uint8_t Now_Mode = 0x00;
-	Read(ICM45686::REGISTER::PWR_MGMT0, &Now_Mode, 1);
+	//現在の値を取得できるまで待機
+	uint8_t NowMode = 0x00;
 
-	//取得した設定から書き込みデータを作成
-	uint8_t  Command = Now_Mode | (uint8_t)Mode;
-
-	//値が一致するまで書き込みを行う
 	uint8_t Error = 0;
-	while(Now_Mode != Command){
+	while(NowMode != GyroModeTmp){
 
-		Write(ICM45686::REGISTER::PWR_MGMT0, &Command, 1);
-
-		Read(ICM45686::REGISTER::PWR_MGMT0, &Now_Mode, 1);
+		Read(ICM45686::REGISTER::PWR_MGMT0, &NowMode, 1);
 
 		Error ++;
 
@@ -73,6 +66,24 @@ uint8_t ICM45686::AccelConfig(ICM45686::Mode Mode, ICM45686::AccelScale Scale, I
 		}
 	}
 
+	//取得した設定から書き込みデータを作成
+	uint8_t  Command = NowMode | (uint8_t)Mode;
+
+	//値が一致するまで書き込みを行う
+	Error = 0;
+	while(NowMode != Command){
+
+		Write(ICM45686::REGISTER::PWR_MGMT0, &Command, 1);
+
+		Read(ICM45686::REGISTER::PWR_MGMT0, &NowMode, 1);
+
+		Error ++;
+
+		if(Error > 100){
+
+			return 1;//PWR_MGMT0接続失敗
+		}
+	}
 
 	//書き込んだModeの保存
 	AccelModeTmp = (uint8_t)Mode;
@@ -81,13 +92,13 @@ uint8_t ICM45686::AccelConfig(ICM45686::Mode Mode, ICM45686::AccelScale Scale, I
 	Command = (uint8_t)ODR + (((uint8_t)Scale) << 4);
 
 	//値が一致するまで書き込みを行う
-	Now_Mode = 0;
+	NowMode = 0;
 	Error = 0;
-	while(Now_Mode != Command){
+	while(NowMode != Command){
 
 		Write(ICM45686::REGISTER::ACCEL_CONFIG, &Command, 1);
 
-		Read(ICM45686::REGISTER::ACCEL_CONFIG, &Now_Mode, 1);
+		Read(ICM45686::REGISTER::ACCEL_CONFIG, &NowMode, 1);
 
 		Error ++;
 
@@ -117,19 +128,28 @@ uint8_t ICM45686::AccelConfig(ICM45686::Mode Mode, ICM45686::AccelScale Scale, I
  */
 uint8_t ICM45686::GyroConfig(ICM45686::Mode Mode, ICM45686::GyroScale Scale,  ICM45686::ODR ODR){
 
-	//現在の値
+	//現在の値を取得
 	uint8_t NowMode = 0x00;
 
-	while(NowMode != AccelMode){
+	//値が取得できるまで待機
+	uint8_t Error = 0;
+	while(NowMode != AccelModeTmp){
 
 		Read(ICM45686::REGISTER::PWR_MGMT0, &NowMode, 1);
+
+		Error ++;
+
+		if(Error > 100){
+
+			return 1;
+		}
 	}
 
 	//取得した設定から書き込みデータを作成
 	uint8_t Command = NowMode | (uint8_t)Mode << 2;
 
 	//値が一致するまで書き込みを行う
-	uint8_t Error = 0;
+	Error = 0;
 	while(Command != NowMode){
 
 		Write(ICM45686::REGISTER::PWR_MGMT0, &Command, 1);
@@ -140,7 +160,7 @@ uint8_t ICM45686::GyroConfig(ICM45686::Mode Mode, ICM45686::GyroScale Scale,  IC
 
 		if(Error > 100){
 
-			return 1;//ACCEL_CONFIG接続失敗
+			return 1;
 		}
 	}
 
@@ -163,7 +183,7 @@ uint8_t ICM45686::GyroConfig(ICM45686::Mode Mode, ICM45686::GyroScale Scale,  IC
 
 		if(Error > 100){
 
-			return 2;//ACCEL_CONFIG接続失敗
+			return 2;
 		}
 	}
 
@@ -189,12 +209,12 @@ uint8_t ICM45686::GetRawData(int16_t AccelData[3], int16_t GyroData[3]){
 
 	//データの受信判定と再試行
 	uint8_t Error = 0;
-	while(RawData[0] == 0 || RawData[0] == PreData){
+	while(RawData[0] == 0){
 
 		Read(ICM45686::REGISTER::ACCEL_DATA_X1_UI, RawData, 12);
 		Error ++;
 
-		if(Error > 100){
+		if(Error > 10000){
 			return 1;
 		}
 	}
@@ -208,8 +228,8 @@ uint8_t ICM45686::GetRawData(int16_t AccelData[3], int16_t GyroData[3]){
 	GyroData[1]  = (int16_t)(RawData[8]  | RawData[9] << 8) - GyroOffset[1];
 	GyroData[2]  = (int16_t)(RawData[10] | RawData[11] << 8) - GyroOffset[2];
 
-	//実行結果を保存
-	PreData = RawData[0];
+	//Bufferをクリア（データ受信判定用）
+	RawData[0] = 0;
 
 	return 0;
 }
@@ -230,7 +250,7 @@ uint8_t ICM45686::GetData(float AccelData[3], float GyroData[3]){
 	for(uint8_t i=0; i<3; i++){
 
 		AccelData[i] = AccelBuffer[i] * G * AccelScaleValue / 32768.0;
-		GyroData[i]  = GyroBuffer[i] * GyroScaleValue / 32768.0 - 3.0 ;
+		GyroData[i]  = GyroBuffer[i] * GyroScaleValue / 32768.0;
 	}
 	return 0;
 }
@@ -257,6 +277,8 @@ uint8_t ICM45686::Calibration(uint16_t Count){
 			AccelTmp[j] += AccelData[j];
 			GyroTmp[j] += GyroData[j];
 		}
+
+		for(uint32_t k=0; k < 10000; k++);
 	}
 
 	//平均値を計算
