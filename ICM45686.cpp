@@ -268,8 +268,7 @@ uint8_t ICM45686::Calibration(uint16_t Count){
 
 		if(GetRawData(AccelData, GyroData) == 1){
 
-			while(1);
-			return 0;
+			return 1;
 		}
 
 		for(uint8_t j=0; j<3; j++){
@@ -288,27 +287,8 @@ uint8_t ICM45686::Calibration(uint16_t Count){
 		GyroOffset[k] = GyroTmp[k] / Count;
 	}
 
-	//オフセットのノルムを計算
-	float AccelNormTmp = 0.0;
-	float AccelNorm    = 0.0;
-
-	for(uint8_t i=0; i<3; i++){
-
-		AccelNormTmp += pow(AccelOffset[i] * G * AccelScaleValue / 32768.0, 2);
-	}
-
-	AccelNorm = AccelNormTmp / pow(G,2);
-
-	//重量加速度をオフセットに含める
+	//重力加速度をオフセットに含める
 	AccelOffset[2] -= 32768 / AccelScaleValue;
 
-	//ノルムが9.80...になるように調整
-	for(uint8_t i=0; i<3; i++){
-
-		AccelOffset[i] = AccelOffset[i] * AccelNorm;
-	}
-
 	return 0;
-
-
 }
